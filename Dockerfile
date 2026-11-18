@@ -1,18 +1,17 @@
-# ETAPA 1: Compilación con Node.js (Debian slim evita errores de binarios nativos de Tailwind v4 / Vite)
-FROM node:20-slim AS builder
+# ETAPA 1: Compilación con Node.js 22
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
-# Copiamos solo package.json para instalar las dependencias nativas de Linux limpiamente
+# Copiar manifiesto e instalar dependencias incluyendo binarios opcionales de Linux
 COPY package.json ./
+RUN npm install --include=optional
 
-RUN npm install
-
-# Copiamos el código fuente del proyecto
+# Copiar el código fuente del proyecto
 COPY . .
 
-# Compilamos el proyecto para producción
-RUN npm run build
+# Compilar el bundle de producción directamente con Vite
+RUN npx vite build
 
 # ETAPA 2: Servidor de producción ultraligero con Nginx
 FROM nginx:stable-alpine AS production
